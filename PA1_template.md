@@ -1,16 +1,12 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
 Code for downloading and unzipping the file.
 
-```{r warning=FALSE}
+
+```r
 setwd("C:/Downloads")
 url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(url, destfile = "activitydata.zip", method = "curl")
@@ -19,13 +15,15 @@ unzip("activitydata.zip")
 
 Code for reading in the file. Any transformations required will be specified as and when required.
 
-```{r}
+
+```r
 activity <- read.csv("C:/Downloads/activity.csv", header = TRUE)
 ```
 
 Assigning "Date" class to the dates
 
-```{r}
+
+```r
 activity$date<- as.Date(as.character(activity$date))
 ```
 
@@ -34,25 +32,41 @@ activity$date<- as.Date(as.character(activity$date))
 
 Code for summing up steps taken per day and converting it into a data frame fromat
 
-```{r}
+
+```r
 totalsteps <- tapply(activity$steps, activity$date, sum)
 total <- data.frame(totalsteps)
 ```
 
 ###Histogram of total number of steps taken per day
 
-```{r}
+
+```r
 hist(total$totalsteps, breaks = 20, col = "red", xlim = c(0,22000),
      main = "Histogram of total number of steps taken each day",
      xlab = "Total number of steps")
 ```
 
+![plot of chunk unnamed-chunk-5](./PA1_template_files/figure-html/unnamed-chunk-5.png) 
+
 ###Mean and median total number of steps taken per day
 
 summary table showing the mean and median toal number of steps taken per day
 
-```{r}
+
+```r
 summary(total)
+```
+
+```
+##    totalsteps   
+##  Min.   :   41  
+##  1st Qu.: 8841  
+##  Median :10765  
+##  Mean   :10766  
+##  3rd Qu.:13294  
+##  Max.   :21194  
+##  NA's   :8
 ```
 
 
@@ -60,7 +74,8 @@ summary(total)
 
 Code for extracting the number of steps taken during a given interval averaged across all days. The data was converted into a data frame containing values of the time intervals and the average number of steps for that time interval.
 
-```{r}
+
+```r
 intavg <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 int<- data.frame(intavg)
 interval<- dimnames(int)[[1]]
@@ -70,18 +85,27 @@ byint<- data.frame(interval, int$intavg)
 
 ###Time series plot of the average number of steps taken in a given interval
 
-```{r}
+
+```r
 plot(byint$interval, byint$int.intavg, type = "l", lwd = 2,
      main = "Average number of steps taken at different times in a day",
      xlab = "Time of the day(minutes)", ylab = "Average number of steps taken")
 ```
 
+![plot of chunk unnamed-chunk-8](./PA1_template_files/figure-html/unnamed-chunk-8.png) 
+
 ###Maximum average number of steps
 
 Code extracting the time interval with the maximum average number of steps in a day and its value
 
-```{r}
+
+```r
 byint[which.max(byint$int.intavg),]
+```
+
+```
+##     interval int.intavg
+## 835      835      206.2
 ```
 
 
@@ -91,22 +115,29 @@ byint[which.max(byint$int.intavg),]
 
 Code showing the total number of missing values in the dataset
 
-```{r}
+
+```r
 sum(is.na(activity))
+```
+
+```
+## [1] 2304
 ```
 
 ###Imputing missing values
 
 Code for converting the data into a data table
 
-```{r}
+
+```r
 library(data.table)
 actimpute<- data.table(activity)
 ```
 
 Code for imputing missing values with the mean number of steps taken in the corresponding time interval and creating new dataset with it
 
-```{r results='hide'}
+
+```r
 actimpute[,avgsteps:= mean(steps, na.rm = TRUE), by=interval]
 actimpute$steps <- ifelse(is.na(actimpute$steps), 
                           actimpute$avgsteps, actimpute$steps)
@@ -114,30 +145,48 @@ actimpute$steps <- ifelse(is.na(actimpute$steps),
 
 Code to show imputing worked
 
-```{r}
+
+```r
 sum(is.na(actimpute))
+```
+
+```
+## [1] 0
 ```
 
 ###Mean and median after imputing missing values
 
 Code for summing up total steps taken per day and converting it into a data frame fromat for the data with imputed values
 
-```{r}
+
+```r
 totalstepsimp = tapply(actimpute$steps, actimpute$date, sum)
 totalimp<- data.frame(totalstepsimp)
 ```
 
 Summary statistics to show that the mean and median total steps per day have not changed after imputing missing values
 
-```{r}
+
+```r
 summary(totalimp)
+```
+
+```
+##  totalstepsimp  
+##  Min.   :   41  
+##  1st Qu.: 9819  
+##  Median :10766  
+##  Mean   :10766  
+##  3rd Qu.:12811  
+##  Max.   :21194
 ```
 
 ###Histogram of total number of steps taken after imputing missing values
 
 Histogram showing a comparison of the total steps taken in a day calculated before(left) and after(right) imputing data. Note that there is a selective increase only in the mean/median value and nowhere else.
 
-```{r}
+
+```r
 par(mfrow = c(1,2))
 
 hist(total$totalsteps, breaks = 20, col = "red", xlim = c(0,22000), main = "",
@@ -148,12 +197,15 @@ hist(totalimp$totalstepsimp, breaks = 20, col = "red", xlim = c(0,22000),
      main = "")
 ```
 
+![plot of chunk unnamed-chunk-16](./PA1_template_files/figure-html/unnamed-chunk-16.png) 
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Code to subset data based on the day of the week
 
-```{r}
+
+```r
 actimpute$date<- as.Date(actimpute$date)
 actimpute$day<- weekdays(actimpute$date, abbreviate =T)
 actimpute$day<- as.factor(actimpute$day)
@@ -163,7 +215,8 @@ actimpweekday<- subset(actimpute, !(day == "Sat"|day == "Sun"))
 
 Code to extract average daily patterns for each time interval for weekends
 
-```{r}
+
+```r
 weekend <- tapply(actimpweekend$steps, actimpweekend$interval, mean)
 end<- data.frame(weekend)
 intervalend<- dimnames(end)[[1]]
@@ -173,7 +226,8 @@ byintend<- data.frame(intervalend, end$weekend)
 
 Code to extract average daily patterns for each time interval for weekdays
 
-```{r}
+
+```r
 weekday <- tapply(actimpweekday$steps, actimpweekday$interval, mean)
 day<- data.frame(weekday)
 intervalday<- dimnames(day)[[1]]
@@ -185,7 +239,8 @@ byintday<- data.frame(intervalday, day$weekday)
 
 Code to plot average daily acitvity patterns based on the day of the week
 
-```{r}
+
+```r
 par(fin = c(6,4), mai = c(0.5,1.2,0.3,0.3))
 par(mfrow = c(2,1))
 plot(byintday$intervalday, byintday$day.weekday, type = "l", lwd = 3,
@@ -194,7 +249,8 @@ plot(byintday$intervalday, byintday$day.weekday, type = "l", lwd = 3,
 
 plot(byintend$intervalend, byintend$end.weekend, type = "l", lwd = 3,
      main = "", col = "red", ylim = c(0,230), xlab = "Time of the day(minutes)", ylab = "Average steps")
-
 ```
+
+![plot of chunk unnamed-chunk-20](./PA1_template_files/figure-html/unnamed-chunk-20.png) 
 
 Panel plot showing the average daily activity pattern for weekdays(top, black) and weekends (bottom, red). Note that there is a sharp peak for daily activity patterns on weekdays and comparitively lesser activity during the rest of the day whereas on weekends, the peak is lower and activity patterns are far more distributed throughout the day.
