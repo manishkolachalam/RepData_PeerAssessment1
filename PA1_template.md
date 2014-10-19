@@ -126,6 +126,8 @@ sum(is.na(activity))
 
 ###Imputing missing values
 
+The strategy used here was to replace all missing values with the mean of the values for the particular time interval across all days that the missing value belonged to. To achieve this, first the dataset was converted to a data table and then the average steps across days for the various time intervals were appended to the table. Following this, an "ifelse" function was used to replace all NAs with the corresponding means.
+
 Code for converting the data into a data table
 
 
